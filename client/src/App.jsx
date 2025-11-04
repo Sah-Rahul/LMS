@@ -1,13 +1,16 @@
-import React from 'react'
-import { Button } from './components/ui/button'
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import Login from "./components/pages/Login";
 
 const App = () => {
   return (
-    <div className='flex items-center justify-center h-screen'>
-      
-      <Button>App</Button>
-    </div>
-  )
-}
+    <>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+        </Routes>
+      </BrowserRouter>
+    </>
+  );
+};
 
-export default App
+export default App;
