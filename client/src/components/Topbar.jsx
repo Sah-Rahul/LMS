@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Button } from "./ui/button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { MdLogin } from "react-icons/md";
 import { IoMdSearch } from "react-icons/io";
 import { AiOutlineMenu } from "react-icons/ai";
@@ -18,11 +18,40 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Search } from "lucide-react";
 import SearchBox from "./SearchBox";
+import { useDispatch, useSelector } from "react-redux";
+import { AUTH_API_END_POINT } from "@/lib/constant";
+import { removeUser } from "@/redux/slices/userSlice";
+import { LoginRoute, registerRoute } from "@/Routes/Route";
+import { showToast } from "@/helper/showToast";
 
 const Topbar = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { user } = useSelector((state) => state.auth);
   const [showSearch, setShowSearch] = useState(false);
   const toggleSearch = () => {
     setShowSearch(!showSearch);
+  };
+  const handleLogout = async () => {
+    try {
+      const res = await fetch(`${AUTH_API_END_POINT}/logout`, {
+        method: "GET",
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Logout failed");
+      }
+
+      const data = await res.json();
+      dispatch(removeUser());
+      showToast("success", data.message || "Logout successful");
+      navigate(LoginRoute);
+    } catch (error) {
+      console.error("Logout error:", error);
+      showToast("error", error.message || "Logout failed");
+    }
   };
 
   return (
@@ -55,46 +84,60 @@ const Topbar = () => {
           <IoMdSearch size={25} />
         </button>
 
-        <Button asChild className="rounded-full">
-          <Link to="/signin">
-            <MdLogin />
-            Sign In
-          </Link>
-        </Button>
-
         <DropdownMenu>
           <DropdownMenuTrigger>
             <Avatar>
               <AvatarImage
-                src="https://images.unsplash.com/photo-1554755229-ca4470e07232?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDR8Ym84alFLVGFFMFl8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=60&w=500"
+                src="https://avatar.iran.liara.run/public"
                 className="cursor-pointer"
               />
             </Avatar>
           </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuLabel>
-              <p>John Doe</p>
-              <p className="text-sm">johndoe@email.com</p>
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem asChild className="cursor-pointer">
-              <Link to="/profile">
-                <FaRegUser />
-                Profile
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild className="cursor-pointer">
-              <Link to="/create-blog">
-                <FaPlus />
-                Create Blog
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="cursor-pointer">
-              <IoLogOutOutline color="red" />
-              Logout
-            </DropdownMenuItem>
-          </DropdownMenuContent>
+
+          {!user ? (
+            <>
+              {" "}
+              <Button asChild className="rounded-full">
+                <Link to={registerRoute}>
+                  <MdLogin />
+                  Sign In
+                </Link>
+              </Button>
+            </>
+          ) : (
+            <>
+              {" "}
+              <DropdownMenuContent>
+                <DropdownMenuLabel>
+                  <p>{user.name}</p>
+                  <p className="text-sm">{user.email}</p>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild className="cursor-pointer">
+                  <Link to="/profile">
+                    <FaRegUser />
+                    Profile
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild className="cursor-pointer">
+                  <Link to="/create-blog">
+                    <FaPlus />
+                    Create Blog
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="cursor-pointer">
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-2 cursor-pointer"
+                  >
+                    <IoLogOutOutline color="red" />
+                    Logout
+                  </button>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </>
+          )}
         </DropdownMenu>
       </div>
     </div>

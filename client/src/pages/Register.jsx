@@ -17,7 +17,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { showToast } from "@/helper/showToast";
 import { LoginRoute } from "@/Routes/Route";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
-import { USER_API_END_POINT } from "@/lib/constant";
+import { AUTH_API_END_POINT } from "@/lib/constant";
 
 const Register = () => {
   const [loading, setLoading] = useState(false);
@@ -50,10 +50,11 @@ const Register = () => {
   const onSubmit = async (values) => {
     try {
       setLoading(true);
-      const res = await fetch(`${USER_API_END_POINT}/register`, {
+      const res = await fetch(`${AUTH_API_END_POINT}/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values),
+        credentials: "include",
       });
       const data = await res.json();
       if (!res.ok) {
@@ -82,7 +83,11 @@ const Register = () => {
                 <FormItem>
                   <FormLabel>Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter your name" {...field} />
+                    <Input
+                      placeholder="Enter your name"
+                      {...field}
+                      autoComplete="name"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -96,7 +101,11 @@ const Register = () => {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter your email" {...field} />
+                    <Input
+                      placeholder="Enter your email"
+                      {...field}
+                      autoComplete="email"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -114,6 +123,7 @@ const Register = () => {
                       type={showPassword ? "text" : "password"}
                       placeholder="Enter your password"
                       {...field}
+                      autoComplete="password"
                     />
                   </FormControl>
                   <FormMessage />
@@ -133,6 +143,7 @@ const Register = () => {
                         type={showPassword ? "text" : "password"}
                         placeholder="Confirm your password"
                         {...field}
+                        autoComplete="current-password"
                       />
                     </FormControl>
                     <FormMessage />

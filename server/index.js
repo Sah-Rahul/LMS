@@ -6,8 +6,8 @@ import { connectDB } from "./src/config/db.js";
 dotenv.config();
 
 // routes
-import AuthRoute from "./src/routes/user.routes.js";
-
+import AuthRoute from "./src/routes/auth.routes.js";
+ 
 const app = express();
 connectDB();
 const PORT = process.env.PORT || 4000;
@@ -22,8 +22,8 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use("/api/v1/auth", AuthRoute);
-
+app.use('/api/v1/auth', AuthRoute)
+ 
 app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;
   const message = err.message || "Internal server error.";

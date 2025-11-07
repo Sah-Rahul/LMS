@@ -17,11 +17,13 @@ import { Link, useNavigate } from "react-router-dom";
 import { showToast } from "@/helper/showToast";
 import { registerRoute, Routeindex } from "@/Routes/Route";
 import { Eye, EyeClosed, EyeIcon, EyeOff, Loader2 } from "lucide-react";
-import { USER_API_END_POINT } from "@/lib/constant";
+import { AUTH_API_END_POINT } from "@/lib/constant";
+import { useDispatch } from "react-redux";
+import { setUser } from "@/redux/slices/userSlice";
 
 const Login = () => {
+  const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
-
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
@@ -42,13 +44,14 @@ const Login = () => {
     try {
       setLoading(true);
 
-      const res = await fetch(`${USER_API_END_POINT}/login`, {
+      const res = await fetch(`${AUTH_API_END_POINT}/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values),
+        credentials: "include",
       });
       const data = await res.json();
-
+      dispatch(setUser(data.user));
       showToast("success", data.message || `Welcome back ${data.name}`);
       navigate(Routeindex);
     } catch (error) {
@@ -74,7 +77,11 @@ const Login = () => {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter your email" {...field} />
+                    <Input
+                      placeholder="Enter your email"
+                      {...field}
+                      autoComplete="email"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -93,6 +100,7 @@ const Login = () => {
                         type={showPassword ? "text" : "password"}
                         placeholder="Enter your password"
                         {...field}
+                        autoComplete="current-password"
                       />
                     </FormControl>
                     <FormMessage />
