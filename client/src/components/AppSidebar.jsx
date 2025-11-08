@@ -15,12 +15,32 @@ import { GrBlog } from "react-icons/gr";
 import { FaRegComments } from "react-icons/fa6";
 import { LuUsers } from "react-icons/lu";
 import { GoDot } from "react-icons/go";
+import {
+  RouteBlog,
+  RouteBlogByCategory,
+  RouteCategoryDetails,
+  RouteCommentDetails,
+  RouteIndex,
+  RouteUser,
+} from "@/helpers/RouteName";
+import { useFetch } from "@/hooks/useFetch";
+import { getEvn } from "@/helpers/getEnv";
+import { useSelector } from "react-redux";
 
 const AppSidebar = () => {
+  const user = useSelector((state) => state.user);
+  const { data: categoryData } = useFetch(
+    `${getEvn("VITE_API_BASE_URL")}/category/all-category`,
+    {
+      method: "get",
+      credentials: "include",
+    }
+  );
+
   return (
     <Sidebar>
       <SidebarHeader className="bg-white">
-       <h2 className="text-3xl font-semibold">LearnSphere</h2>
+        <h1 className="text-2xl font-bold text-center mb-5">LearnSphere</h1>
       </SidebarHeader>
       <SidebarContent className="bg-white">
         <SidebarGroup>
@@ -28,55 +48,65 @@ const AppSidebar = () => {
             <SidebarMenuItem>
               <SidebarMenuButton>
                 <IoHomeOutline />
-                <Link to="/">Home</Link>
+                <Link to={RouteIndex}>Home</Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
 
-            <SidebarMenuItem>
-              <SidebarMenuButton>
-                <GrBlog />
-                <Link to="/blogs">Blogs</Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
+            {user && user.isLoggedIn ? (
+              <>
+                <SidebarMenuItem>
+                  <SidebarMenuButton>
+                    <GrBlog />
+                    <Link to={RouteBlog}>Blogs</Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton>
+                    <FaRegComments />
+                    <Link to={RouteCommentDetails}>Comments</Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </>
+            ) : (
+              <></>
+            )}
+            {user && user.isLoggedIn && user.user.role === "admin" ? (
+              <>
+                <SidebarMenuItem>
+                  <SidebarMenuButton>
+                    <BiCategoryAlt />
+                    <Link to={RouteCategoryDetails}>Categories</Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
 
-            <SidebarMenuItem>
-              <SidebarMenuButton>
-                <FaRegComments />
-                <Link to="/comments">Comments</Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-
-            <SidebarMenuItem>
-              <SidebarMenuButton>
-                <BiCategoryAlt />
-                <Link to="/categories">Categories</Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-
-            <SidebarMenuItem>
-              <SidebarMenuButton>
-                <LuUsers />
-                <Link to="/users">Users</Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton>
+                    <LuUsers />
+                    <Link to={RouteUser}>Users</Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </>
+            ) : (
+              <></>
+            )}
           </SidebarMenu>
         </SidebarGroup>
 
         <SidebarGroup>
           <SidebarGroupLabel>Categories</SidebarGroupLabel>
           <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton>
-                <GoDot />
-                <Link to="/category/sample-category">Sample Category</Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton>
-                <GoDot />
-                <Link to="/category/another-category">Another Category</Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
+            {categoryData &&
+              categoryData.category.length > 0 &&
+              categoryData.category.map((category) => (
+                <SidebarMenuItem key={category._id}>
+                  <SidebarMenuButton>
+                    <GoDot />
+                    <Link to={RouteBlogByCategory(category.slug)}>
+                      {category.name}
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>

@@ -1,7 +1,6 @@
-"use client";
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
-import { Controller, FormProvider, useFormContext, useFormState } from "react-hook-form";
+import { Controller, FormProvider, useFormContext } from "react-hook-form";
 
 import { cn } from "@/lib/utils"
 import { Label } from "@/components/ui/label"
@@ -16,17 +15,17 @@ const FormField = (
   }
 ) => {
   return (
-    <FormFieldContext.Provider value={{ name: props.name }}>
+    (<FormFieldContext.Provider value={{ name: props.name }}>
       <Controller {...props} />
-    </FormFieldContext.Provider>
+    </FormFieldContext.Provider>)
   );
 }
 
 const useFormField = () => {
   const fieldContext = React.useContext(FormFieldContext)
   const itemContext = React.useContext(FormItemContext)
-  const { getFieldState } = useFormContext()
-  const formState = useFormState({ name: fieldContext.name })
+  const { getFieldState, formState } = useFormContext()
+
   const fieldState = getFieldState(fieldContext.name, formState)
 
   if (!fieldContext) {
@@ -47,43 +46,36 @@ const useFormField = () => {
 
 const FormItemContext = React.createContext({})
 
-function FormItem({
-  className,
-  ...props
-}) {
+const FormItem = React.forwardRef(({ className, ...props }, ref) => {
   const id = React.useId()
 
   return (
-    <FormItemContext.Provider value={{ id }}>
-      <div data-slot="form-item" className={cn("grid gap-2", className)} {...props} />
-    </FormItemContext.Provider>
+    (<FormItemContext.Provider value={{ id }}>
+      <div ref={ref} className={cn("space-y-2", className)} {...props} />
+    </FormItemContext.Provider>)
   );
-}
+})
+FormItem.displayName = "FormItem"
 
-function FormLabel({
-  className,
-  ...props
-}) {
+const FormLabel = React.forwardRef(({ className, ...props }, ref) => {
   const { error, formItemId } = useFormField()
 
   return (
-    <Label
-      data-slot="form-label"
-      data-error={!!error}
-      className={cn("data-[error=true]:text-destructive", className)}
+    (<Label
+      ref={ref}
+      className={cn(error && "text-destructive", className)}
       htmlFor={formItemId}
-      {...props} />
+      {...props} />)
   );
-}
+})
+FormLabel.displayName = "FormLabel"
 
-function FormControl({
-  ...props
-}) {
+const FormControl = React.forwardRef(({ ...props }, ref) => {
   const { error, formItemId, formDescriptionId, formMessageId } = useFormField()
 
   return (
-    <Slot
-      data-slot="form-control"
+    (<Slot
+      ref={ref}
       id={formItemId}
       aria-describedby={
         !error
@@ -91,46 +83,43 @@ function FormControl({
           : `${formDescriptionId} ${formMessageId}`
       }
       aria-invalid={!!error}
-      {...props} />
+      {...props} />)
   );
-}
+})
+FormControl.displayName = "FormControl"
 
-function FormDescription({
-  className,
-  ...props
-}) {
+const FormDescription = React.forwardRef(({ className, ...props }, ref) => {
   const { formDescriptionId } = useFormField()
 
   return (
-    <p
-      data-slot="form-description"
+    (<p
+      ref={ref}
       id={formDescriptionId}
-      className={cn("text-muted-foreground text-sm", className)}
-      {...props} />
+      className={cn("text-[0.8rem] text-muted-foreground", className)}
+      {...props} />)
   );
-}
+})
+FormDescription.displayName = "FormDescription"
 
-function FormMessage({
-  className,
-  ...props
-}) {
+const FormMessage = React.forwardRef(({ className, children, ...props }, ref) => {
   const { error, formMessageId } = useFormField()
-  const body = error ? String(error?.message ?? "") : props.children
+  const body = error ? String(error?.message) : children
 
   if (!body) {
     return null
   }
 
   return (
-    <p
-      data-slot="form-message"
+    (<p
+      ref={ref}
       id={formMessageId}
-      className={cn("text-destructive text-sm", className)}
+      className={cn("text-[0.8rem] font-medium text-destructive", className)}
       {...props}>
       {body}
-    </p>
+    </p>)
   );
-}
+})
+FormMessage.displayName = "FormMessage"
 
 export {
   useFormField,
